@@ -464,8 +464,16 @@ static NSDictionary* customCertificatesForHost;
         [_webView loadRequest:request];
     }
     else {
-        NSURL* readAccessUrl = _allowingReadAccessToURL ? [RCTConvert NSURL:_allowingReadAccessToURL] : request.URL;
-        [_webView loadFileURL:request.URL allowingReadAccessToURL:readAccessUrl];
+        NSString *path = [url path];
+        NSString *extension = [path pathExtension];
+
+        if (@available(iOS 13.0, *) && [extension caseInsensitiveCompare:@"pdf"] == NSOrderedSame) {
+            NSData *pdfData = [NSData dataWithContentsOfFile:path];
+            [self.webView loadData:pdfData MIMEType:@"application/pdf" textEncodingName:@"" baseURL:[NSURL URLWithString:path];
+        } else {
+            NSURL* readAccessUrl = _allowingReadAccessToURL ? [RCTConvert NSURL:_allowingReadAccessToURL] : request.URL;
+            [_webView loadFileURL:request.URL allowingReadAccessToURL:readAccessUrl];
+        }
     }
 }
 
